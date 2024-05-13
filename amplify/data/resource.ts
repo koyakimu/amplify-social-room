@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { generateHaiku } from '../functions/generateHaiku/resource';
 
 const cursorType = {
   roomId: a.string().required(),
@@ -42,6 +43,20 @@ const schema = a.schema({
     roomId: a.id().required()
   }),
   
+  generateHaiku: a.mutation()
+    .arguments({ roomId: a.string().required() })
+    .returns(a.ref('Haiku'))
+    .authorization(allow => [allow.authenticated()])
+    .handler(a.handler.function(generateHaiku)),
+
+  onGenerateHaiku: a.subscription()
+    .arguments({ roomId: a.string().required() })
+    .for(a.ref('generateHaiku'))
+    .authorization(allow => [allow.authenticated()])
+    .handler(a.handler.custom({
+      entry: './onGenerateHaiku.js'
+    }))
+
 }).authorization((allow) => [allow.authenticated()]);
 
 export type Schema = ClientSchema<typeof schema>;
