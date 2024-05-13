@@ -10,7 +10,17 @@ const cursorType = {
 const schema = a.schema({
   Room: a.model({
     topic: a.string(),
+    pictures: a.hasMany('Picture', 'roomId')
   }),
+
+  Picture: a.model({
+    path: a.string().required(),
+    roomId: a.string().required(),
+    room: a.belongsTo('Room', 'roomId')
+  }),
+
+  Cursor: a.customType(cursorType),
+
   publishCursor: a.mutation()
     .arguments(cursorType)
     .returns(a.ref('Cursor'))
@@ -26,9 +36,12 @@ const schema = a.schema({
     .handler(a.handler.custom({
       entry: './subscribeCursor.js'
     })),
-    
-  Cursor: a.customType(cursorType),
 
+  Haiku: a.customType({
+    content: a.string().required(),
+    roomId: a.id().required()
+  }),
+  
 }).authorization((allow) => [allow.authenticated()]);
 
 export type Schema = ClientSchema<typeof schema>;
